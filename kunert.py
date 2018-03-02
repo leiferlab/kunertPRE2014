@@ -38,7 +38,7 @@ ggap = 1e-10
 
 # Load the connectome
 # and neurotransmitters, +1 excitatory, -1 inhibitory
-f = open('../aconnectome/aconnectome.json','r')
+f = open('aconnectome.json','r')
 content = json.load(f)
 Gsyn = np.array(content['chemical'])
 Ggap = np.array(content['electrical'])
