@@ -1,0 +1,17 @@
+{
+"nt": 0.1e6,
+"dt": 1e-6,
+"t0": 0,
+"C": 1e-12,
+"Gcell": 1e-11,
+"Ecell": -35e-3,
+"gsyn": 1e-10,
+"ar": 1.0,
+"ad": 5.0,
+"beta": 125.0,
+"esynexc": 0.0,
+"esyninh": -45e-3,
+"ggap": 1e-10,
+"interacting": 1
+}
+
