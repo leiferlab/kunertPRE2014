@@ -2,8 +2,7 @@ import numpy as np
 from scipy.integrate import ode
 import matplotlib.pyplot as plt
 import json
-from sys import exit
-from sys import stdout
+from sys import exit,stdout,argv
 import time
 import os
 from shutil import copy2
@@ -17,7 +16,7 @@ f = open('params.json','r')
 params = json.load(f)
 f.close()
 
-savefile = False
+savefile = True
 
 # Number of steps
 M = params['nt']
@@ -67,6 +66,11 @@ ggap = params['ggap'] # conductivity of electrical synapse [Siemens]
 Esyn = 0.5*(Neurotrans+1)*esynexc - 0.5*(Neurotrans-1)*esyninh
 
 
+# Set Iext amplitude from parameter passed at call
+Imax = float(argv[1])
+print(Imax)
+
+
 ##############################################
 #### Define functions
 ##############################################
@@ -97,16 +101,16 @@ def Veq(V, S, Ggap=Ggap, Gsyn=Gsyn, Gcell=Gcell, ggap=ggap, gsyn=gsyn, \
 
 # System of differential equations
 # Y' = f(t,Y), where Y is [Voltages,Synaptic activations]
-def fY(t, Y, Vth, Iextbuff, Iext=Iext, Ggap=Ggap, Gsyn=Gsyn, Gcell=Gcell, \
-        ggap=ggap, gsyn=gsyn, beta=beta, Esyn=Esyn, Ec=Ecell, ar=ar, ad=ad, \
-        N=N):
+def fY(t, Y, Vth, Iextbuff, Iext=Iext, Imax=Imax, Ggap=Ggap, Gsyn=Gsyn, \
+        Gcell=Gcell, ggap=ggap, gsyn=gsyn, beta=beta, Esyn=Esyn, Ec=Ecell, \
+        ar=ar, ad=ad, N=N):
     #The first N elements of Y are voltages, the last N are synaptic activations
     
     V = Y[:N]
     S = Y[N:]
     
     VV = np.repeat([V], V.shape, 0)
-    Iext(t,Iextbuff)
+    Iext(t,Iextbuff,Imax)
     
     Vdot = 1./C * ( - Gcell*(V-Ec) \
             - np.sum( Ggap*ggap*(VV.T-V[None,:]), axis=1 ) \
@@ -114,6 +118,7 @@ def fY(t, Y, Vth, Iextbuff, Iext=Iext, Ggap=Ggap, Gsyn=Gsyn, Gcell=Gcell, \
             +  Iextbuff)
     
     Sdot = ar / ( 1.0 + np.exp(-beta*(V-Vth)) ) * (1.-S) - ad*S
+    #Sdot = np.zeros_like(S)
     
     Ydot = np.append(Vdot,Sdot)
     
@@ -136,7 +141,9 @@ print("\n\n------- Calculating the resting properties.")
 # Load them from previously saved file. If file does not exist, initialize
 # at Ec.
 try:
-    f = open('V0.json','r')
+    astr = ''
+    if params['interacting']==0: astr = '-nonint'
+    f = open('V0'+astr+'.json','r')
     V = np.array(json.load(f))
     f.close()
 except:
@@ -166,7 +173,7 @@ else:
     exit("The self-consistency did not converge.")
     
 # Save it for next time
-f = open('V0.json','w')
+f = open('V0'+astr+'.json','w')
 json.dump(V.tolist(),f)
 f.close()
     
@@ -223,8 +230,8 @@ if not os.path.exists(folder):
 # Save undersampled results
 if savefile:
     f = open(folder+filename,'w')
-    json.dump({'Y0': Y0.tolist(), 'Y': evolvingY.tolist(), 'T': T, \
-             'Iext': Iextsave},f)
+    json.dump({'Y0': Y0.tolist(), 'Y': evolvingY.T.tolist(), 'T': T, \
+             'Iext': Iextsave[44]},f)
     f.close()
     
 # Save parameters.
