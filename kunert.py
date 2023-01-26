@@ -68,7 +68,8 @@ Esyn = 0.5*(Neurotrans+1)*esynexc - 0.5*(Neurotrans-1)*esyninh
 
 # Set Iext amplitude from parameter passed at call
 Imax = float(argv[1])
-print(Imax)
+neu_j = int(argv[2])
+print(Imax,"in",neu_j)
 
 
 ##############################################
@@ -101,16 +102,16 @@ def Veq(V, S, Ggap=Ggap, Gsyn=Gsyn, Gcell=Gcell, ggap=ggap, gsyn=gsyn, \
 
 # System of differential equations
 # Y' = f(t,Y), where Y is [Voltages,Synaptic activations]
-def fY(t, Y, Vth, Iextbuff, Iext=Iext, Imax=Imax, Ggap=Ggap, Gsyn=Gsyn, \
-        Gcell=Gcell, ggap=ggap, gsyn=gsyn, beta=beta, Esyn=Esyn, Ec=Ecell, \
-        ar=ar, ad=ad, N=N):
+def fY(t, Y, Vth, Iextbuff, Iext=Iext, Imax=Imax, neu_j=neu_j, Ggap=Ggap, \
+        Gsyn=Gsyn, Gcell=Gcell, ggap=ggap, gsyn=gsyn, beta=beta, Esyn=Esyn, \
+        Ec=Ecell, ar=ar, ad=ad, N=N):
     #The first N elements of Y are voltages, the last N are synaptic activations
     
     V = Y[:N]
     S = Y[N:]
     
     VV = np.repeat([V], V.shape, 0)
-    Iext(t,Iextbuff,Imax)
+    Iext(t,Iextbuff,Imax,neu_j)
     
     Vdot = 1./C * ( - Gcell*(V-Ec) \
             - np.sum( Ggap*ggap*(VV.T-V[None,:]), axis=1 ) \
@@ -246,7 +247,8 @@ copy2('iext.py', folder+filename+"-iext.py")
 fig = plt.figure(1)
 ax1 = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
-ax1.plot(T,evolvingY[:,:300]-Y0[:300])
+#ax1.plot(T,evolvingY[:,:300]-Y0[:300])
+ax1.plot(T,evolvingY[:,95]-Y0[95])
 ax1.set_xlabel("Time (s)",fontsize=14)
 ax1.set_ylabel(r"$\Delta V\,\, (V)$", fontsize=18)
 

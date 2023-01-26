@@ -1,12 +1,14 @@
 # Definition of external current
 # 1 pA [10 pA / (10 pS) in the paper, strange way they use to defining the scale] seems to be the value used by Kunert in his Fig 3 (2014), even though he does that strange normalization. It is set as the default value of the Imax argument. Use it as a reference for the amplitude of the current.
 
-def Iext(t, Iextbuff, Imax=1e-12):
+def Iext(t, Iextbuff, Imax=1e-12, neu_j=145): #44
     ## Example
-    if t>0.001 and t<0.004:
-        Iextbuff[44] = Imax 
+    '''if t>0.001 and t<0.004:
+        Iextbuff[neu_j] = Imax 
     else:
-        Iextbuff[44] = 0.0
+        Iextbuff[neu_j] = 0.0'''
+        
+    Iextbuff[neu_j] = Imax 
         
     ############################
     ## Other examples of stimuli
